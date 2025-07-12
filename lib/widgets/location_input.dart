@@ -18,6 +18,17 @@ class LocationInput extends StatefulWidget {
 class _LocationInputState extends State<LocationInput> {
   PlaceLocation? _pickedLocation;
   var _isGettingLocation = false;
+
+  //google map static
+  String get locationImage {
+    if (_pickedLocation == null) {
+      return '';
+    }
+    final lat = _pickedLocation!.latitude;
+    final lng = _pickedLocation!.longitude;
+    return 'https://maps.googleapis.com/maps/api/staticmap?center=$lat,$lng=&zoom=16&size=600x300&maptype=roadmap&markers=color:blue%7Clabel:S%7C40.702147,-74.015794&markers=color:green%7Clabel:G%7C40.711614,-74.012318&markers=color:red%7Clabel:C%7C$lat,$lng&key=YOUR_API_KEY&signature=YOUR_SIGNATURE';
+  }
+
   //fonction asynchrone pour recuperer la position actuelle de l'utilisateur
   void _getCurrentLocation() async {
     Location location = Location();
@@ -65,7 +76,7 @@ class _LocationInputState extends State<LocationInput> {
     }
 
     final url = Uri.parse(
-      'https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=YOUR_API_KEY',//remplacer Your api key par le vrai key
+      'https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=YOUR_API_KEY', //remplacer Your api key par le vrai key
     );
 
     final response = await http.get(url);
@@ -92,6 +103,16 @@ class _LocationInputState extends State<LocationInput> {
         color: Theme.of(context).colorScheme.onSurface,
       ),
     );
+
+    if (_pickedLocation != null) {
+      previewContent = Image.network(
+        locationImage,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+      );
+    }
+
     if (_isGettingLocation) {
       previewContent = const CircularProgressIndicator();
     }
