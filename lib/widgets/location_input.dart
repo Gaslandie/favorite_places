@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
+import 'package:http/http.dart' as http;
 
 class LocationInput extends StatefulWidget {
   const LocationInput({super.key});
@@ -49,6 +52,20 @@ class _LocationInputState extends State<LocationInput> {
     //si tout est ok, service et permissions, on recupere la position GPS actuelle
     //du user sous forme de LocationData, qui contient: latitude, longitude, altitude, vitesse...
     locationData = await location.getLocation();
+
+    //convertir nos coordonnées en adresse
+
+    final lat = locationData.latitude;
+    final lng = locationData.longitude;
+
+    final url = Uri.parse(
+      'https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=YOUR_API_KEY',
+    );
+
+    final response = await http.get(url);
+    final resData = json.decode(response.body);
+    //address après conversion
+    final address = resData['results'][0]['formatted_address'];
 
     setState(() {
       _isGettingLocation = false;
