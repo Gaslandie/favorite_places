@@ -12,7 +12,7 @@ class LocationInput extends StatefulWidget {
   final void Function(PlaceLocation location) onSelectLocation;
 
   @override
-  State<StatefulWidget> createState() {
+  State<LocationInput> createState() {
     return _LocationInputState();
   }
 }

@@ -8,7 +8,7 @@ class ImageInput extends StatefulWidget {
   final void Function(File image) onPickImage;
 
   @override
-  State<StatefulWidget> createState() {
+  State<ImageInput> createState() {
     return _ImageInputState();
   }
 }
