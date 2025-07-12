@@ -51,6 +51,7 @@ class _MapScreen extends State<MapScreen> {
                   _pickedLocation = position;
                 });
               },
+        //definir la position et zoom de depart de la carte Google map
         initialCameraPosition: CameraPosition(
           target: LatLng(widget.location.latitude, widget.location.longitude),
           zoom: 16,
