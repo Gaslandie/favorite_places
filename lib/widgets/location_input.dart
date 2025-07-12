@@ -1,9 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:location/location.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:location/location.dart';
+import 'package:favorite_places/screens/map.dart';
 import 'package:favorite_places/models/place.dart';
 
 class LocationInput extends StatefulWidget {
@@ -29,6 +31,27 @@ class _LocationInputState extends State<LocationInput> {
     final lat = _pickedLocation!.latitude;
     final lng = _pickedLocation!.longitude;
     return 'https://maps.googleapis.com/maps/api/staticmap?center=$lat,$lng=&zoom=16&size=600x300&maptype=roadmap&markers=color:blue%7Clabel:S%7C40.702147,-74.015794&markers=color:green%7Clabel:G%7C40.711614,-74.012318&markers=color:red%7Clabel:C%7C$lat,$lng&key=YOUR_API_KEY&signature=YOUR_SIGNATURE';
+  }
+
+  void _savePlace(double latitude, double longitude) async {
+    final url = Uri.parse(
+      'https://maps.googleapis.com/maps/api/geocode/json?latlng=$latitude,$longitude&key=YOUR_API_KEY', //remplacer Your api key par le vrai key
+    );
+
+    final response = await http.get(url);
+    final resData = json.decode(response.body);
+    //address après conversion
+    final address = resData['results'][0]['formatted_address'];
+
+    setState(() {
+      _pickedLocation = PlaceLocation(
+        latitude: latitude,
+        longitude: longitude,
+        address: address,
+      );
+      _isGettingLocation = false;
+    });
+    widget.onSelectLocation(_pickedLocation!);
   }
 
   //fonction asynchrone pour recuperer la position actuelle de l'utilisateur
@@ -76,25 +99,22 @@ class _LocationInputState extends State<LocationInput> {
     if (lat == null || lng == null) {
       return;
     }
+    _savePlace(lat, lng);
+  }
 
-    final url = Uri.parse(
-      'https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=YOUR_API_KEY', //remplacer Your api key par le vrai key
-    );
+  // Comme on veut récupérer la valeur retournée par pop(), on met async et await
+  // car Navigator.push est asynchrone et retourne un Future
+  //push<LatLng> car on a attend un LatLng(type securité)
+  void _selectOnMap() async {
+    final pickedLocation = await Navigator.of(
+      context,
+    ).push<LatLng>(MaterialPageRoute(builder: (ctx) =>const MapScreen()));
 
-    final response = await http.get(url);
-    final resData = json.decode(response.body);
-    //address après conversion
-    final address = resData['results'][0]['formatted_address'];
+    if (pickedLocation == null) {
+      return;
+    }
 
-    setState(() {
-      _pickedLocation = PlaceLocation(
-        latitude: lat,
-        longitude: lng,
-        address: address,
-      );
-      _isGettingLocation = false;
-    });
-    widget.onSelectLocation(_pickedLocation!);
+    _savePlace(pickedLocation.latitude, pickedLocation.longitude);
   }
 
   @override
@@ -146,7 +166,7 @@ class _LocationInputState extends State<LocationInput> {
             TextButton.icon(
               icon: Icon(Icons.map),
               label: const Text('Select on map'),
-              onPressed: () {},
+              onPressed: _selectOnMap,
             ),
           ],
         ),
